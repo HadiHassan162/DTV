@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DTV Admin Panel</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#0A0A0B;
+      --ink-2:#1B1B1F;
+      --gold:#F2B84B;
+      --gold-deep:#C9821F;
+      --bg:#F8FAFC;
+      --surface:#FFFFFF;
+      --text:#0B1220;
+      --text-muted:#5B6B85;
+      --border:#E2E8F0;
+      --radius:16px;
+      --shadow:0 10px 30px -12px rgba(11,18,32,0.16);
+      --danger:#DC2626;
+      --success:#16A34A;
+    }
+    *{box-sizing:border-box; margin:0; padding:0;}
+    body{
+      background:var(--bg); color:var(--text);
+      font-family:'DM Sans', -apple-system, sans-serif;
+      -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
+    }
+    a{color:inherit; text-decoration:none;}
+    .heading{font-family:'Space Grotesk', sans-serif; font-weight:700;}
+
+    nav{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 6vw;
+      background:var(--ink); color:#fff;
+    }
+    nav .brand{font-family:'Space Grotesk'; font-weight:700; font-size:18px; letter-spacing:0.02em;}
+    nav .brand span{color:var(--gold);}
+    .nav-links{display:flex; gap:20px; align-items:center;}
+    .nav-links a{font-size:14px; color:rgba(255,255,255,0.7); font-weight:500; transition:color .2s;}
+    .nav-links a:hover{color:var(--gold);}
+
+    .container{max-width:1160px; margin:0 auto; padding:30px 6vw 80px;}
+
+    .page-title{font-size:clamp(24px, 3vw, 32px); margin-bottom:8px;}
+    .page-sub{color:var(--text-muted); font-size:15px; margin-bottom:30px;}
+
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:24px;}
+    @media(max-width:900px){.grid-2{grid-template-columns:1fr;}}
+
+    .card{
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      padding:24px; box-shadow:var(--shadow);
+    }
+    .card h3{font-family:'Space Grotesk'; font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:8px;}
+    .card h3 svg{width:18px; height:18px; color:var(--gold-deep);}
+
+    .btn{
+      padding:11px 20px; border-radius:9px; font-size:14px; font-weight:700;
+      display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+      transition:transform .15s ease, box-shadow .15s ease;
+      border:none; font-family:'DM Sans', sans-serif;
+    }
+    .btn:hover{transform:translateY(-2px);}
+    .btn-primary{
+      background:linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
+      color:#241503; box-shadow:0 10px 24px -8px rgba(201,130,31,0.55);
+    }
+    .btn-outline{background:var(--surface); border:1.5px solid var(--border); color:var(--text);}
+    .btn-success{background:var(--success); color:#fff;}
+    .btn-danger{background:var(--danger); color:#fff;}
+
+    .input, select.input, textarea.input{
+      width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px;
+      font-size:14px; font-family:'DM Sans', sans-serif; outline:none; transition:border-color .2s;
+      background:var(--surface);
+    }
+    .input:focus{border-color:var(--gold);}
+    textarea.input{resize:vertical; min-height:70px;}
+
+    .form-row{margin-bottom:14px;}
+    .form-row label{display:block; font-size:13px; font-weight:600; color:var(--text); margin-bottom:6px;}
+    .form-row .hint{font-size:12px; color:var(--text-muted); margin-top:4px;}
+
+    .code-display{
+      background:linear-gradient(135deg, var(--ink-2), #000); border-radius:12px;
+      padding:18px; text-align:center; margin-top:16px;
+    }
+    .code-display .code{
+      font-family:'Space Grotesk'; font-size:28px; font-weight:700; letter-spacing:0.12em;
+      color:var(--gold);
+    }
+    .code-display .copy-btn{margin-top:12px;}
+
+    .code-list{max-height:400px; overflow-y:auto;}
+    .code-item{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 14px; border:1px solid var(--border); border-radius:10px; margin-bottom:8px;
+      background:var(--surface);
+    }
+    .code-item .code-text{
+      font-family:'Space Grotesk'; font-weight:700; font-size:15px; letter-spacing:0.08em;
+    }
+    .code-item .status{
+      font-size:11px; font-weight:700; padding:4px 10px; border-radius:100px; text-transform:uppercase;
+    }
+    .status.available{background:rgba(22,163,74,0.1); color:var(--success);}
+    .status.used{background:rgba(220,38,38,0.1); color:var(--danger);}
+    .code-item .date{font-size:11px; color:var(--text-muted);}
+    .code-item .actions{display:flex; gap:8px;}
+
+    .course-list .course-item{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px 14px; border:1px solid var(--border); border-radius:10px; margin-bottom:10px;
+    }
+    .course-item .info h4{font-family:'Space Grotesk'; font-size:15px;}
+    .course-item .info p{font-size:12.5px; color:var(--text-muted); margin-top:2px;}
+    .course-item .actions{display:flex; gap:8px; flex-shrink:0;}
+
+    .empty-state{text-align:center; padding:20px; color:var(--text-muted); font-size:14px;}
+
+    .toast{
+      position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px);
+      background:var(--ink); color:#fff; padding:14px 24px; border-radius:12px;
+      font-size:14px; font-weight:600; z-index:9999; opacity:0;
+      transition:transform .3s ease, opacity .3s ease;
+      display:flex; align-items:center; gap:10px;
+      pointer-events:none;
+    }
+    .toast.visible{transform:translateX(-50%) translateY(0); opacity:1;}
+    .toast svg{width:18px; height:18px; color:var(--gold);}
+
+    .tabs{display:flex; gap:10px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:14px;}
+    .tab-btn{
+      padding:9px 18px; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer;
+      border:1px solid var(--border); background:var(--surface); color:var(--text-muted);
+      transition:all .2s;
+    }
+    .tab-btn.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+
+    .modal-overlay{
+      position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.6);
+      display:none; align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.visible{display:flex;}
+    .modal-box{
+      background:var(--surface); border-radius:var(--radius); max-width:560px; width:100%;
+      padding:28px; box-shadow:0 25px 60px -15px rgba(0,0,0,0.5);
+    }
+    .modal-box h3{font-family:'Space Grotesk'; font-size:19px; margin-bottom:16px;}
+    .modal-actions{display:flex; gap:10px; justify-content:flex-end; margin-top:20px;}
+
+    .drop-zone{
+      border:2px dashed var(--border); border-radius:10px; padding:30px; text-align:center;
+      margin:20px 0; cursor:pointer; transition:border-color .2s;
+      background:var(--surface);
+    }
+    .drop-zone:hover{border-color:var(--gold);}
+    .drop-zone.active{border-color:var(--gold); background:rgba(242,184,75,0.08);}
+    .drop-zone input{display:none;}
+    .drop-zone .icon{width:48px; height:48px; margin:0 auto 12px;}
+    .drop-zone .hint{font-size:13px; color:var(--text-muted);}
+    .drop-zone .filename{margin-top:8px; font-size:13px; color:var(--text); min-height:20px;}
+  </style>
+</head>
+
+<body>
+
+<nav>
+  <div class="brand">DTV <span>Admin</span></div>
+  <div class="nav-links">
+    <a href="/">View Site</a>
+    <a href="/courses">Courses Page</a>
+    <a href="javascript:void(0)" id="logoutLink">Logout</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1 class="page-title heading">Admin Panel</h1>
+  <p class="page-sub">Manage access codes, course videos, and monitor usage.</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="codes">Access Codes</button>
+    <button class="tab-btn" data-tab="courses">Courses</button>
+    <button class="tab-btn" data-tab="sessions">Sessions</button>
+  </div>
+
+  <!-- ====== ACCESS CODES TAB ====== -->
+  <div class="tab-panel active" id="tab-codes">
+    <div class="grid-2">
+      <div class="card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Generate Access Code
+        </h3>
+        <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:12px;">
+          Each code can only be used once. After a code is entered, it becomes invalid for anyone else.
+        </p>
+        <button class="btn btn-primary" id="generateBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Generate New Code
+        </button>
+        <div class="code-display" id="codeDisplay" style="display:none;">
+          <div class="code" id="generatedCode">XXXX-XXXX</div>
+          <button class="btn btn-outline copy-btn" id="copyCodeBtn">Copy Code</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          Available Access Codes
+        </h3>
+        <div class="code-list" id="codesList">
+          <div class="empty-state">Loading codes...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== COURSES TAB ====== -->
+  <div class="tab-panel" id="tab-courses">
+    <div class="card" style="margin-bottom:24px;">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M10 8l6 4-6 4z"/></svg>
+        Add / Edit Course
+      </h3>
+      <form id="courseForm">
+        <input type="hidden" id="courseId">
+        <input type="hidden" id="courseVideoUrl">
+        <div class="form-row">
+          <label>Course Title *</label>
+          <input type="text" class="input" id="courseTitle" required>
+        </div>
+        <div class="form-row">
+          <label>Description</label>
+          <textarea class="input" id="courseDesc"></textarea>
+        </div>
+        <div class="form-row">
+          <label>Video File *</label>
+          <input type="file" class="input" id="courseVideoFile" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogv,.mov">
+          <div class="hint">Upload the course video (MP4 / WebM / OGG / MOV, up to 500 MB). When editing, leave empty to keep the current video.</div>
+          <div class="hint" id="currentVideoHint" style="display:none;">Current video: <strong id="currentVideoName"></strong></div>
+        </div>
+        <div class="form-row">
+          <label>Thumbnail Image <span style="font-weight:400; color:var(--text-muted);">(optional)</span></label>
+          <input type="file" class="input" id="courseThumbFile" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
+          <div class="hint">Optional image shown on the course card (JPG / PNG / WebP, max 2 MB). When editing, leave empty to keep the current thumbnail.</div>
+          <div class="hint" id="currentThumbHint" style="display:none;">Current thumbnail: <strong id="currentThumbName"></strong></div>
+        </div>
+        <div class="form-row">
+          <label>Duration</label>
+          <input type="text" class="input" id="courseDuration" placeholder="45 min">
+        </div>
+        <div class="form-row">
+          <label>Level</label>
+          <select class="input" id="courseLevel">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="resetBtn">Clear</button>
+          <button type="submit" class="btn btn-primary">Save Course</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        All Courses
+      </h3>
+      <div class="course-list" id="coursesList">
+        <div class="empty-state">Loading courses...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SESSIONS TAB ====== -->
+  <div class="tab-panel" id="tab-sessions">
+    <div class="card">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Active Sessions
+      </h3>
+      <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:12px;">
+        Each session is an anonymous access token created when a code is redeemed — it's what lets someone stay logged in
+        across visits and devices without needing a new code every time. Revoking one immediately ends that access.
+      </p>
+      <div class="code-list" id="sessionsList">
+        <div class="empty-state">Loading sessions...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+  <span id="toastMsg">Success!</span>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  function api(path, options){
+    options = options || {};
+    options.credentials = 'same-origin';
+    return fetch(path, options).then(function(res){
+      // Session expired or never logged in -> go to the login page.
+      if (res.status === 401) {
+        window.location.href = '/admin/login';
+        throw new Error('AUTH_REQUIRED');
+      }
+      // If the response body isn't valid JSON, treat it as a server/network failure
+      // (e.g. an HTML error page from a proxy, or a non-API host).
+      return res.json().catch(function(){ throw new Error('non-json response (' + res.status + ')'); });
+    });
+  }
+
+  window.logout = function(){
+    fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' })
+      .catch(function(){ /* ignore network errors — still navigate away */ })
+      .then(function(){ window.location.href = '/admin/login'; });
+  };
+
+  function showToast(msg){
+    var toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.add('visible');
+    setTimeout(function(){ toast.classList.remove('visible'); }, 3000);
+  }
+
+  // ============ TABS ============
+  window.switchTab = function(tab){
+    document.querySelectorAll('.tab-btn').forEach(function(b){
+      b.classList.toggle('active', b.textContent.toLowerCase().indexOf(tab) !== -1);
+    });
+    document.getElementById('tab-codes').classList.toggle('active', tab === 'codes');
+    document.getElementById('tab-courses').classList.toggle('active', tab === 'courses');
+    document.getElementById('tab-sessions').classList.toggle('active', tab === 'sessions');
+    if (tab === 'sessions') loadSessions();
+  };
+
+  // ============ ACCESS CODES ============
+  var generatedCode = null;
+
+  window.generateCode = function(){
+    api('/api/admin/generate-code', { method: 'POST' })
+      .then(function(data){
+        if (data.success) {
+          generatedCode = data.code;
+          document.getElementById('generatedCode').textContent = data.code;
+          document.getElementById('codeDisplay').style.display = 'block';
+          showToast('Access code generated successfully!');
+          loadCodes();
+        } else {
+          showToast('Failed to generate code.');
+        }
+      })
+      .catch(function(){ showToast('Cannot reach server. Make sure "node server.js" is running, then refresh.'); });
+  };
+
+  window.copyGeneratedCode = function(){
+    if (!generatedCode) return;
+    navigator.clipboard.writeText(generatedCode)
+      .then(function(){ showToast('Code copied to clipboard!'); })
+      .catch(function(){ showToast('Could not copy code.'); });
+  };
+
+  function loadCodes(){
+    api('/api/admin/codes')
+      .then(function(data){
+        if (!data.success) return;
+        var list = document.getElementById('codesList');
+        // Show only AVAILABLE (non-used) codes
+        var available = data.codes.filter(function(c){ return !c.is_used; });
+        var usedCount = data.codes.length - available.length;
+        if (available.length === 0) {
+          list.innerHTML = '<div class="empty-state">No available codes. Generate a new code above.</div>';
+          return;
+        }
+        list.innerHTML = available.map(function(c){
+          var date = c.created_at || '';
+          var shortDate = date ? date.split(' ')[0] : '';
+          return '<div class="code-item">' +
+            '<div>' +
+              '<div class="code-text">' + c.code + '</div>' +
+              '<div class="date">' + shortDate + '</div>' +
+            '</div>' +
+            '<span class="status available">Available</span>' +
+          '</div>';
+        }).join('') +
+        (usedCount > 0
+          ? '<div class="empty-state" style="margin-top:12px;">' + usedCount + ' code' + (usedCount>1?'s':'') + ' already used.</div>'
+          : '');
+      })
+      .catch(function(){
+        document.getElementById('codesList').innerHTML = '<div class="empty-state">Cannot reach the API. Make sure "node server.js" is running and open this page via http://localhost:3000/admin (not by double-clicking the file).</div>';
+      });
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(m){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+    });
+  }
+
+  // ============ SESSIONS ============
+  function loadSessions(){
+    api('/api/admin/sessions')
+      .then(function(data){
+        if (!data.success) return;
+        var list = document.getElementById('sessionsList');
+        if (data.sessions.length === 0) {
+          list.innerHTML = '<div class="empty-state">No sessions yet.</div>';
+          return;
+        }
+        var now = Date.now();
+        list.innerHTML = data.sessions.map(function(s){
+          var state = s.revoked ? 'Revoked' : (now > s.expiresAtMs ? 'Expired' : 'Active');
+          var statusClass = state === 'Active' ? 'available' : 'used';
+          var expiresDate = new Date(s.expiresAtMs).toLocaleDateString();
+          var revokeBtn = state === 'Active'
+            ? '<div class="actions"><button class="btn btn-danger revoke-session-btn" data-token="' + escapeHtml(s.token) + '">Revoke</button></div>'
+            : '';
+          return '<div class="code-item">' +
+            '<div>' +
+              '<div class="code-text" style="font-size:13px; letter-spacing:0;">code ' + escapeHtml(s.code || '—') + '</div>' +
+              '<div class="date">created ' + escapeHtml((s.createdAt || '').split(' ')[0]) + ' &middot; expires ' + expiresDate + '</div>' +
+            '</div>' +
+            '<span class="status ' + statusClass + '">' + state + '</span>' +
+            revokeBtn +
+          '</div>';
+        }).join('');
+
+        // data-token + addEventListener, not a string-built onclick — a
+        // session token is arbitrary-looking text, and concatenating it
+        // straight into an inline onclick string is exactly the pattern
+        // that broke the course Edit/Delete buttons earlier.
+        list.querySelectorAll('.revoke-session-btn').forEach(function(btn){
+          btn.addEventListener('click', function(){
+            var token = btn.getAttribute('data-token');
+            if (!confirm('Revoke this session? Whoever is using it will need a new access code to get back in.')) return;
+            api('/api/admin/sessions/' + encodeURIComponent(token) + '/revoke', { method: 'POST' })
+              .then(function(res){
+                if (res.success) { showToast('Session revoked.'); loadSessions(); }
+              })
+              .catch(function(){ showToast('Failed to revoke session.'); });
+          });
+        });
+      })
+      .catch(function(){
+        document.getElementById('sessionsList').innerHTML = '<div class="empty-state">Cannot reach the API.</div>';
+      });
+  }
+
+  // ============ COURSES ============
+  function loadCourses(){
+    api('/api/courses')
+      .then(function(data){
+        if (!data.success) return;
+        var list = document.getElementById('coursesList');
+        if (data.courses.length === 0) {
+          list.innerHTML = '<div class="empty-state">No courses added yet.</div>';
+          return;
+        }
+        list.innerHTML = data.courses.map(function(c){
+          var thumb = c.thumbnail_url
+            ? '<img src="' + escapeHtml(c.thumbnail_url) + '" alt="" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;">'
+            : '<div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--ink-2),#000);flex-shrink:0;"></div>';
+          var vName = (c.video_url || '').split('/').pop() || 'No video';
+          return '<div class="course-item" style="display:flex;align-items:center;gap:12px;">' +
+            thumb +
+            '<div class="info">' +
+              '<h4>' + escapeHtml(c.title) + '</h4>' +
+              '<p>' + escapeHtml(c.level || 'Beginner') + ' • ' + escapeHtml(c.duration || '30 min') + '</p>' +
+              '<p style="color:var(--text-muted); font-size:11px;">' + escapeHtml(vName) + '</p>' +
+            '</div>' +
+            '<div class="actions">' +
+              '<button class="btn btn-outline edit-course-btn" data-id="' + escapeHtml(c.id) + '">Edit</button>' +
+              '<button class="btn btn-danger delete-course-btn" data-id="' + escapeHtml(c.id) + '">Delete</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        // data-id + addEventListener (not string-built onclick) — avoids the
+        // inline-handler pitfalls and keeps everything escaped.
+        list.querySelectorAll('.edit-course-btn').forEach(function(btn){
+          btn.addEventListener('click', function(){ editCourse(btn.getAttribute('data-id')); });
+        });
+        list.querySelectorAll('.delete-course-btn').forEach(function(btn){
+          btn.addEventListener('click', function(){ deleteCourse(btn.getAttribute('data-id')); });
+        });
+      })
+      .catch(function(){
+        document.getElementById('coursesList').innerHTML = '<div class="empty-state">Cannot reach the API. Make sure "node server.js" is running, then refresh.</div>';
+      });
+  }
+
+  window.editCourse = function(id){
+    api('/api/courses/' + encodeURIComponent(id))
+      .then(function(data){
+        if (!data.success) return;
+        var c = data.course;
+        document.getElementById('courseId').value = c.id;
+        document.getElementById('courseTitle').value = c.title || '';
+        document.getElementById('courseDesc').value = c.description || '';
+        document.getElementById('courseVideoUrl').value = c.video_url || '';
+        document.getElementById('courseDuration').value = c.duration || '';
+        document.getElementById('courseLevel').value = c.level || 'Beginner';
+        document.getElementById('courseVideoFile').value = '';
+        document.getElementById('courseThumbFile').value = '';
+        document.getElementById('currentVideoHint').style.display = c.video_url ? 'block' : 'none';
+        document.getElementById('currentVideoName').textContent = (c.video_url || '').split('/').pop() || '';
+        document.getElementById('currentThumbHint').style.display = c.thumbnail_url ? 'block' : 'none';
+        document.getElementById('currentThumbName').textContent = (c.thumbnail_url || '').split('/').pop() || '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+  };
+
+  window.resetCourseForm = function(){
+    document.getElementById('courseId').value = '';
+    document.getElementById('courseTitle').value = '';
+    document.getElementById('courseDesc').value = '';
+    document.getElementById('courseVideoUrl').value = '';
+    document.getElementById('courseDuration').value = '';
+    document.getElementById('courseLevel').value = 'Beginner';
+    document.getElementById('courseVideoFile').value = '';
+    document.getElementById('courseThumbFile').value = '';
+    document.getElementById('currentVideoHint').style.display = 'none';
+    document.getElementById('currentThumbHint').style.display = 'none';
+  };
+
+  window.saveCourse = function(e){
+    e.preventDefault();
+    var id = document.getElementById('courseId').value;
+    var videoFile = document.getElementById('courseVideoFile').files[0];
+
+    // New courses must have a video file; edits can keep the existing one.
+    if (!id && !videoFile) {
+      showToast('Please choose a video file for the course.');
+      return;
+    }
+
+    var fd = new FormData();
+    fd.append('title', document.getElementById('courseTitle').value);
+    fd.append('description', document.getElementById('courseDesc').value);
+    fd.append('duration', document.getElementById('courseDuration').value || '30 min');
+    fd.append('level', document.getElementById('courseLevel').value);
+    if (videoFile) fd.append('video', videoFile);
+    var thumbFile = document.getElementById('courseThumbFile').files[0];
+    if (thumbFile) fd.append('thumbnail', thumbFile);
+
+    var url = id ? '/api/admin/courses/' + encodeURIComponent(id) : '/api/admin/courses';
+    var method = id ? 'PUT' : 'POST';
+
+    // FormData sets the multipart Content-Type (with boundary) automatically —
+    // never set Content-Type manually for uploads.
+    fetch(url, { method: method, credentials: 'same-origin', body: fd })
+    .then(function(res){
+      if (res.status === 401) { window.location.href = '/admin/login'; throw new Error('AUTH_REQUIRED'); }
+      return res.json();
+    })
+    .then(function(res){
+      if (res.success) {
+        showToast(id ? 'Course updated!' : 'Course added!');
+        resetCourseForm();
+        loadCourses();
+        switchTab('courses');
+      } else {
+        showToast(res.error || 'Failed to save course.');
+      }
+    })
+    .catch(function(){ showToast('Cannot reach server. Make sure "node server.js" is running, then refresh.'); });
+  };
+
+  window.deleteCourse = function(id){
+    if (!confirm('Delete this course? This cannot be undone.')) return;
+    api('/api/admin/courses/' + id, { method: 'DELETE' })
+      .then(function(res){
+        if (res.success) {
+          showToast('Course deleted.');
+          loadCourses();
+        }
+      });
+  };
+
+    // ============ EVENT LISTENERS (replaces inline onclick/onsubmit) ============
+  // NOTE: Helmet sets `script-src-attr 'none'` in the CSP, which silently
+  // blocks every inline onclick/onsubmit/ondragstart handler on both the
+  // admin and courses pages. We attach the same behaviour here with
+  // addEventListener so the buttons and links actually work.
+
+  // Logout link
+  var logoutLink = document.getElementById('logoutLink');
+  if (logoutLink) {
+    logoutLink.addEventListener('click', function(e) { e.preventDefault(); logout(); });
+  }
+
+  // Tab buttons — use data-tab attribute instead of inline onclick
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(function(b) {
+    b.addEventListener('click', function() { switchTab(b.getAttribute('data-tab')); });
+  });
+
+  // Generate access code
+  var generateBtn = document.getElementById('generateBtn');
+  if (generateBtn) {
+    generateBtn.addEventListener('click', generateCode);
+  }
+
+  // Copy generated code to clipboard
+  var copyCodeBtn = document.getElementById('copyCodeBtn');
+  if (copyCodeBtn) {
+    copyCodeBtn.addEventListener('click', copyGeneratedCode);
+  }
+
+  // Course form submit
+  var courseForm = document.getElementById('courseForm');
+  if (courseForm) {
+    courseForm.addEventListener('submit', saveCourse);
+  }
+
+  // Reset course form
+  var resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetCourseForm);
+  }
+
+  // ============ INIT ============
+  loadCodes();
+  loadCourses();
+  loadSessions();
+
+})();
+</script>
+
+</body>
+</html>
